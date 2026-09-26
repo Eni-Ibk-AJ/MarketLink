@@ -57,6 +57,10 @@ Below is the complete catalog of APIs available on MarketLink, sequentially numb
 22. [Create Market](#22-create-market) ( `POST` `/api/markets` )
 23. [Update Market](#23-update-market) ( `PUT` `/api/markets/:id` )
 24. [Delete Market](#24-delete-market) ( `DELETE` `/api/markets/:id` )
+25. [Get Admin Dashboard Analytics](#25-get-admin-dashboard-analytics) ( `GET` `/api/admin/dashboard` )
+26. [Get All Users](#26-get-all-users) ( `GET` `/api/admin/users` )
+27. [Update User](#27-update-user) ( `PUT` `/api/admin/users/:id` )
+28. [Delete User](#28-delete-user) ( `DELETE` `/api/admin/users/:id` )
 
 ---
 
@@ -708,6 +712,115 @@ Removes a market from the system.
   "message": "Market deleted."
 }
 ```
+
+---
+
+## 25. Get Admin Dashboard Analytics
+Returns high-level platform analytics for the admin dashboard (total users, farmers, customers, markets, products, and orders).
+
+- **Endpoint**: `GET /api/admin/dashboard`
+- **Authentication**: Required (JWT Bearer, Admin)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "data": {
+    "totalUsers": 342,
+    "totalFarmers": 58,
+    "totalCustomers": 280,
+    "totalMarkets": 12,
+    "totalProducts": 410,
+    "totalOrders": 1203
+  }
+}
+```
+- **Error Responses**: `401` (missing/invalid token), `403` (not an admin), `500` (`"Error fetching admin dashboard analytics"`)
+
+---
+
+## 26. Get All Users
+Fetches all registered users. Supports filtering by role.
+
+- **Endpoint**: `GET /api/admin/users`
+- **Authentication**: Required (JWT Bearer, Admin)
+- **Query Parameters**:
+  - `role` — filter by user role (e.g. `?role=farmer`)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "id": "65f1a2b3c4d5e6f7a8b9c0d1",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "jane@example.com",
+      "role": "farmer",
+      "isVerified": true,
+      "createdAt": "2026-09-01T09:00:00Z"
+    },
+    {
+      "id": "65f1a2b3c4d5e6f7a8b9c0d6",
+      "firstName": "John",
+      "lastName": "Smith",
+      "email": "john@example.com",
+      "role": "customer",
+      "isVerified": true,
+      "createdAt": "2026-08-20T14:30:00Z"
+    }
+  ]
+}
+```
+- **Note**: Passwords are excluded from the response; results are sorted newest first.
+- **Error Responses**: `401`, `403`, `500` (`"Error fetching users list"`)
+
+---
+
+## 27. Update User
+Updates a user's role or verification status (e.g., suspend or upgrade a user).
+
+- **Endpoint**: `PUT /api/admin/users/:id`
+- **Authentication**: Required (JWT Bearer, Admin)
+- **Request Body**:
+```json
+{
+  "role": "farmer",
+  "isVerified": false
+}
+```
+  Both fields are optional — send only the ones you want to change.
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "User updated successfully",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d1",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane@example.com",
+    "role": "farmer"
+  }
+}
+```
+- **Error Responses**: `404` (`"User not found"`), `500` (`"Error updating user profile"`)
+
+---
+
+## 28. Delete User
+Deletes a user from the platform.
+
+- **Endpoint**: `DELETE /api/admin/users/:id`
+- **Authentication**: Required (JWT Bearer, Admin)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "User deleted successfully"
+}
+```
+- **Error Responses**: `404` (`"User not found"`), `500` (`"Error deleting user"`)
 
 ---
 

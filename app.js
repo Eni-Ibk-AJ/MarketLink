@@ -6,7 +6,7 @@ var mongoose = require("mongoose")
 
 
 const registerController = require("./controller/register");
-const userInfoController = require("./controller/userInfo");
+const userInfoController = require("./controller/userInfoController");
 const marketController = require("./controller/marketController");
 const productController = require("./controller/productController");
 const orderController = require("./controller/orderController");
