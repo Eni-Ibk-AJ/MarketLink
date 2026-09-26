@@ -1,0 +1,29 @@
+{
+  "name": "marketlink",
+  "version": "1.0.0",
+  "description": "school project building an environment that allows vendors and client to connect and perform food stuff transaction",
+  "keywords": [
+    "project"
+  ],
+  "license": "ISC",
+  "author": "israel",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "axios": "^1.20.0",
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^2.3.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mailersend": "^3.4.1",
+    "mongoose": "^7.8.12",
+    "nodemailer": "^10.0.10",
+    "socket.io": "^4.8.4",
+    "uuid": "^14.0.2"
+  }
+}
