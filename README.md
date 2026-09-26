@@ -4,106 +4,70 @@ Welcome to the **MarketLink** REST API! This service powers the MarketLink platf
 
 ---
 
-## 🚀 Quick Start & Setup
-
-### Base URL
-```text
+## Base URL
+```
 http://localhost:3001/api
+```
 
-
-
-### Authentication Header
+## Authentication Header
 Most endpoints require a valid JSON Web Token (JWT) passed in the Authorization header:
+```
 Authorization: Bearer <YOUR_JWT_TOKEN>
+```
 
-
-
----
-
-## 👥 User Roles & Access Control
-
-The API enforces strict Role-Based Access Control (RBAC):
-
-- **customer**: Can browse markets/products, place pre-orders, leave reviews, and manage favorites.
-- **farmer**: Can create and manage inventory, accept/update incoming pre-orders, update stall profiles, and respond to customer reviews.
-- **admin**: Full platform control (create, update, and remove markets or products).
+## User Roles
+- **customer** — browse markets/products, place pre-orders, leave reviews, manage favorites
+- **farmer** — manage inventory, handle incoming pre-orders, update stall profile, respond to reviews
+- **admin** — full platform control over markets and products
 
 ---
 
-## 📋 API Endpoints Summary
+# API Summary and Quick Nav
 
-### 🔑 1. Authentication & Account (`/api`)
+Below is the complete catalog of APIs available on MarketLink, sequentially numbered.
 
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/register` | Public | Register a new user (customer, farmer, or admin). |
-| POST | `/api/login` | Public | Authenticate user and receive JWT token + user object. |
-| GET | `/api/user/profile` | Authenticated | Retrieve current user profile and populate favorites. |
-| PUT | `/api/farmer/profile` | Farmer | Update farmer stall details, operating days, and location. |
-| POST | `/api/user/favorites` | Customer | Toggle a farmer or product in customer favorites list. |
+## Public Endpoints
+1. [Register User](#1-register-user) ( `POST` `/api/register` )
+2. [Login](#2-login) ( `POST` `/api/login` )
+3. [Get All Markets](#3-get-all-markets) ( `GET` `/api/markets` )
+4. [Get Market by ID](#4-get-market-by-id) ( `GET` `/api/markets/:id` )
+5. [Get All Products](#5-get-all-products) ( `GET` `/api/products` )
+6. [Get Product by ID](#6-get-product-by-id) ( `GET` `/api/products/:id` )
+7. [Get Farmer Reviews](#7-get-farmer-reviews) ( `GET` `/api/farmers/:id/reviews` )
+8. [AI Assistant](#8-ai-assistant) ( `POST` `/api/ai/assistant` )
 
-### 🏪 2. Markets (`/api/markets`)
+## Authenticated — Customer Endpoints
+9. [Get User Profile](#9-get-user-profile) ( `GET` `/api/user/profile` )
+10. [Toggle Favorite](#10-toggle-favorite) ( `POST` `/api/user/favorites` )
+11. [Place Order](#11-place-order) ( `POST` `/api/orders` )
+12. [Get Customer Orders](#12-get-customer-orders) ( `GET` `/api/customer/orders` )
+13. [Post a Review](#13-post-a-review) ( `POST` `/api/reviews` )
 
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| GET | `/api/markets` | Public | Fetch all active markets. Supports day filter: `?day=Saturday`. |
-| GET | `/api/markets/:id` | Public | Get details for a single market by ID. |
-| POST | `/api/markets` | Admin | Create a new market (name, address, lat/lng, hours). |
-| PUT | `/api/markets/:id` | Admin | Update market operating details or status. |
-| DELETE | `/api/markets/:id` | Admin | Remove a market from the system. |
+## Authenticated — Farmer Endpoints
+14. [Update Farmer Profile](#14-update-farmer-profile) ( `PUT` `/api/farmer/profile` )
+15. [Get Farmer's Own Products](#15-get-farmers-own-products) ( `GET` `/api/farmer/products` )
+16. [Add Product](#16-add-product) ( `POST` `/api/products` )
+17. [Update Product](#17-update-product) ( `PUT` `/api/products/:id` )
+18. [Delete Product](#18-delete-product) ( `DELETE` `/api/products/:id` )
+19. [Get Farmer Orders](#19-get-farmer-orders) ( `GET` `/api/farmer/orders` )
+20. [Update Order Status](#20-update-order-status) ( `PATCH` `/api/orders/:id/status` )
+21. [Respond to a Review](#21-respond-to-a-review) ( `POST` `/api/reviews/:id/respond` )
 
-### 🌽 3. Products & Inventory (`/api/products`)
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| GET | `/api/products` | Public | Fetch available products with filters (see Query Parameters below). |
-| GET | `/api/products/:id` | Public | Fetch single product with populated farmer details. |
-| GET | `/api/farmer/products` | Farmer | Fetch current farmer's own inventory (including out-of-stock items). |
-| POST | `/api/products` | Farmer | Add a new product to inventory. |
-| PUT | `/api/products/:id` | Farmer | Update stock, pricing, or product availability. |
-| DELETE | `/api/products/:id` | Farmer / Admin | Delete product (farmers can only delete their own). |
-
-#### 🔍 Product Filter Query Parameters (`GET /api/products`)
-- `category`: Filter by category (e.g., Vegetables, Fruits, Dairy).
-- `farmerId`: Filter by a specific farmer's MongoDB ID.
-- `minPrice` / `maxPrice`: Filter within price bounds.
-- `search`: Case-insensitive keyword search by name (e.g., `?search=tomato`).
-
-### 📦 4. Pre-Orders & Fulfillment (`/api/orders`)
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/orders` | Customer | Place a new pre-order (automatically validates & deducts stock). |
-| GET | `/api/customer/orders` | Customer | View customer order history. |
-| GET | `/api/farmer/orders` | Farmer | View incoming orders + revenue dashboard metrics. |
-| PATCH | `/api/orders/:id/status` | Farmer / Customer | Update order status (see lifecycle below). |
-
-#### 🔄 Order Status Lifecycle
-- `placed`: Initial state set when customer submits an order.
-- `accepted`: Farmer acknowledges order.
-- `ready_for_pickup`: Order packed and waiting at market stall.
-- `completed`: Customer collected order.
-- `cancelled` / `declined`: Cancelled by customer or declined by farmer (automatically restores product stock).
-
-### ⭐ 5. Reviews & Ratings (`/api/reviews`)
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/reviews` | Customer | Post a rating (1–5) and comment for a farmer/product. |
-| GET | `/api/farmers/:id/reviews` | Public | Get all customer reviews for a specific farmer. |
-| POST | `/api/reviews/:id/respond` | Farmer | Reply to a specific review left on your stall. |
-
-### 🤖 6. Assistant Route (`/api/ai/assistant`)
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/api/ai/assistant` | Public | Simple pattern assistant returning operating hours & active products. |
+## Admin Endpoints
+22. [Create Market](#22-create-market) ( `POST` `/api/markets` )
+23. [Update Market](#23-update-market) ( `PUT` `/api/markets/:id` )
+24. [Delete Market](#24-delete-market) ( `DELETE` `/api/markets/:id` )
 
 ---
 
-## 🛠 Sample Payload Formats
+# Endpoint Details
 
-### 1. User Registration (`POST /api/register`)
+## 1. Register User
+Creates a new user account as a customer, farmer, or admin.
+
+- **Endpoint**: `POST /api/register`
+- **Authentication**: Not required (Public)
+- **Request Body**:
 ```json
 {
   "firstName": "Jane",
@@ -114,8 +78,279 @@ The API enforces strict Role-Based Access Control (RBAC):
   "phone": "+2348000000000"
 }
 ```
+- **Success Response (201 Created)**:
+```json
+{
+  "success": true,
+  "message": "User registered successfully.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d1",
+    "email": "jane@example.com",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "role": "farmer",
+    "phone": "+2348000000000"
+  }
+}
+```
+- **Error Responses**: `400` (missing/invalid fields, email already registered)
 
-### 2. Place Order (`POST /api/orders`)
+---
+
+## 2. Login
+Authenticates a user and returns a JWT token.
+
+- **Endpoint**: `POST /api/login`
+- **Authentication**: Not required (Public)
+- **Request Body**:
+```json
+{
+  "email": "jane@example.com",
+  "password": "securepassword123"
+}
+```
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Login successful.",
+  "data": {
+    "token": "<JWT_TOKEN>",
+    "user": {
+      "id": "65f1a2b3c4d5e6f7a8b9c0d1",
+      "email": "jane@example.com",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "role": "farmer"
+    }
+  }
+}
+```
+- **Error Responses**: `400` (missing fields), `401` (invalid credentials)
+
+---
+
+## 3. Get All Markets
+Fetches all active markets. Supports filtering by operating day.
+
+- **Endpoint**: `GET /api/markets`
+- **Authentication**: Not required (Public)
+- **Query Parameters**:
+  - `day` — filter markets open on a given day (e.g. `?day=Saturday`)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Markets retrieved.",
+  "data": [
+    {
+      "id": "65f1a2b3c4d5e6f7a8b9c0d2",
+      "name": "Downtown Farmers Market",
+      "address": "12 Market St, Dallas, TX",
+      "lat": 32.7767,
+      "lng": -96.7970,
+      "operatingDays": ["Saturday", "Sunday"],
+      "hours": "08:00 AM - 02:00 PM"
+    }
+  ]
+}
+```
+
+---
+
+## 4. Get Market by ID
+Fetches details for a single market.
+
+- **Endpoint**: `GET /api/markets/:id`
+- **Authentication**: Not required (Public)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Market retrieved.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d2",
+    "name": "Downtown Farmers Market",
+    "address": "12 Market St, Dallas, TX",
+    "lat": 32.7767,
+    "lng": -96.7970,
+    "operatingDays": ["Saturday", "Sunday"],
+    "hours": "08:00 AM - 02:00 PM"
+  }
+}
+```
+- **Error Responses**: `404` (market not found)
+
+---
+
+## 5. Get All Products
+Fetches available products, with optional filters.
+
+- **Endpoint**: `GET /api/products`
+- **Authentication**: Not required (Public)
+- **Query Parameters**:
+  - `category` — e.g. `Vegetables`, `Fruits`, `Dairy`
+  - `farmerId` — filter by a specific farmer's ID
+  - `minPrice` / `maxPrice` — filter within a price range
+  - `search` — case-insensitive keyword search by name (e.g. `?search=tomato`)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Products retrieved.",
+  "data": [
+    {
+      "id": "65f1a2b3c4d5e6f7a8b9c0d3",
+      "name": "Roma Tomatoes",
+      "category": "Vegetables",
+      "price": 3.5,
+      "quantityAvailable": 40,
+      "farmerId": "65f1a2b3c4d5e6f7a8b9c0d1"
+    }
+  ]
+}
+```
+
+---
+
+## 6. Get Product by ID
+Fetches a single product with populated farmer details.
+
+- **Endpoint**: `GET /api/products/:id`
+- **Authentication**: Not required (Public)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Product retrieved.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d3",
+    "name": "Roma Tomatoes",
+    "category": "Vegetables",
+    "price": 3.5,
+    "quantityAvailable": 40,
+    "farmer": {
+      "id": "65f1a2b3c4d5e6f7a8b9c0d1",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "stallName": "Jane's Greens"
+    }
+  }
+}
+```
+- **Error Responses**: `404` (product not found)
+
+---
+
+## 7. Get Farmer Reviews
+Gets all customer reviews left for a specific farmer.
+
+- **Endpoint**: `GET /api/farmers/:id/reviews`
+- **Authentication**: Not required (Public)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Reviews retrieved.",
+  "data": [
+    {
+      "id": "65f1a2b3c4d5e6f7a8b9c0d4",
+      "rating": 5,
+      "comment": "Fresh produce, quick pickup!",
+      "customerName": "John Smith",
+      "farmerResponse": null,
+      "createdAt": "2026-09-12T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## 8. AI Assistant
+A simple pattern-based assistant that returns operating hours and active products.
+
+- **Endpoint**: `POST /api/ai/assistant`
+- **Authentication**: Not required (Public)
+- **Request Body**:
+```json
+{
+  "message": "What markets are open on Saturday?"
+}
+```
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Assistant response generated.",
+  "data": {
+    "reply": "Downtown Farmers Market is open Saturday from 08:00 AM to 02:00 PM."
+  }
+}
+```
+
+---
+
+## 9. Get User Profile
+Retrieves the profile information linked to the authenticated user.
+
+- **Endpoint**: `GET /api/user/profile`
+- **Authentication**: Required (JWT Bearer)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "User profile retrieved.",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "user@example.com",
+    "phone_number": "+123456789",
+    "username": "john_doe",
+    "first_name": "John",
+    "last_name": "Doe",
+    "role": "customer",
+    "city": "Dallas",
+    "country": "USA",
+    "favorites": ["65f1a2b3c4d5e6f7a8b9c0d1"],
+    "is_verified": true
+  }
+}
+```
+- **Error Responses**: `401` (missing/invalid token)
+
+---
+
+## 10. Toggle Favorite
+Adds or removes a farmer/product from the customer's favorites list.
+
+- **Endpoint**: `POST /api/user/favorites`
+- **Authentication**: Required (JWT Bearer, Customer)
+- **Request Body**:
+```json
+{
+  "targetId": "65f1a2b3c4d5e6f7a8b9c0d1",
+  "targetType": "farmer"
+}
+```
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Favorites updated.",
+  "data": {
+    "favorites": ["65f1a2b3c4d5e6f7a8b9c0d1"]
+  }
+}
+```
+
+---
+
+## 11. Place Order
+Places a new pre-order. Automatically validates and deducts stock.
+
+- **Endpoint**: `POST /api/orders`
+- **Authentication**: Required (JWT Bearer, Customer)
+- **Request Body**:
 ```json
 {
   "farmerId": "65f1a2b3c4d5e6f7a8b9c0d1",
@@ -124,18 +359,353 @@ The API enforces strict Role-Based Access Control (RBAC):
   "pickupTimeSlot": "09:00 AM - 11:00 AM",
   "note": "Please pick fresh ripe tomatoes",
   "items": [
+    { "productId": "65f1a2b3c4d5e6f7a8b9c0d3", "quantity": 2 }
+  ]
+}
+```
+- **Success Response (201 Created)**:
+```json
+{
+  "success": true,
+  "message": "Order placed successfully.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d5",
+    "status": "placed",
+    "totalAmount": 7.0,
+    "pickupDate": "2026-10-15",
+    "pickupTimeSlot": "09:00 AM - 11:00 AM"
+  }
+}
+```
+- **Error Responses**: `400` (insufficient stock, missing fields)
+
+---
+
+## 12. Get Customer Orders
+Views the authenticated customer's order history.
+
+- **Endpoint**: `GET /api/customer/orders`
+- **Authentication**: Required (JWT Bearer, Customer)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Orders retrieved.",
+  "data": [
     {
-      "productId": "65f1a2b3c4d5e6f7a8b9c0d3",
-      "quantity": 2
+      "id": "65f1a2b3c4d5e6f7a8b9c0d5",
+      "status": "ready_for_pickup",
+      "totalAmount": 7.0,
+      "pickupDate": "2026-10-15"
     }
   ]
 }
 ```
 
-### 3. Update Order Status (`PATCH /api/orders/:id/status`)
+---
+
+## 13. Post a Review
+Posts a rating (1–5) and comment for a farmer/product.
+
+- **Endpoint**: `POST /api/reviews`
+- **Authentication**: Required (JWT Bearer, Customer)
+- **Request Body**:
+```json
+{
+  "farmerId": "65f1a2b3c4d5e6f7a8b9c0d1",
+  "rating": 5,
+  "comment": "Fresh produce, quick pickup!"
+}
+```
+- **Success Response (201 Created)**:
+```json
+{
+  "success": true,
+  "message": "Review posted.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d4",
+    "rating": 5,
+    "comment": "Fresh produce, quick pickup!"
+  }
+}
+```
+
+---
+
+## 14. Update Farmer Profile
+Updates farmer stall details, operating days, and location.
+
+- **Endpoint**: `PUT /api/farmer/profile`
+- **Authentication**: Required (JWT Bearer, Farmer)
+- **Request Body**:
+```json
+{
+  "stallName": "Jane's Greens",
+  "operatingDays": ["Saturday", "Sunday"],
+  "location": { "lat": 32.7767, "lng": -96.7970 }
+}
+```
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Farmer profile updated.",
+  "data": {
+    "stallName": "Jane's Greens",
+    "operatingDays": ["Saturday", "Sunday"]
+  }
+}
+```
+
+---
+
+## 15. Get Farmer's Own Products
+Fetches the current farmer's full inventory, including out-of-stock items.
+
+- **Endpoint**: `GET /api/farmer/products`
+- **Authentication**: Required (JWT Bearer, Farmer)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Inventory retrieved.",
+  "data": [
+    {
+      "id": "65f1a2b3c4d5e6f7a8b9c0d3",
+      "name": "Roma Tomatoes",
+      "quantityAvailable": 0,
+      "isAvailable": false
+    }
+  ]
+}
+```
+
+---
+
+## 16. Add Product
+Adds a new product to the farmer's inventory.
+
+- **Endpoint**: `POST /api/products`
+- **Authentication**: Required (JWT Bearer, Farmer)
+- **Request Body**:
+```json
+{
+  "name": "Roma Tomatoes",
+  "category": "Vegetables",
+  "price": 3.5,
+  "quantityAvailable": 40
+}
+```
+- **Success Response (201 Created)**:
+```json
+{
+  "success": true,
+  "message": "Product added.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d3",
+    "name": "Roma Tomatoes",
+    "price": 3.5,
+    "quantityAvailable": 40
+  }
+}
+```
+
+---
+
+## 17. Update Product
+Updates stock, pricing, or availability of an existing product.
+
+- **Endpoint**: `PUT /api/products/:id`
+- **Authentication**: Required (JWT Bearer, Farmer — own products only)
+- **Request Body**:
+```json
+{
+  "price": 3.0,
+  "quantityAvailable": 25
+}
+```
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Product updated.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d3",
+    "price": 3.0,
+    "quantityAvailable": 25
+  }
+}
+```
+
+---
+
+## 18. Delete Product
+Deletes a product. Farmers can only delete their own products.
+
+- **Endpoint**: `DELETE /api/products/:id`
+- **Authentication**: Required (JWT Bearer, Farmer / Admin)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Product deleted."
+}
+```
+- **Error Responses**: `403` (not the product owner), `404` (product not found)
+
+---
+
+## 19. Get Farmer Orders
+Views incoming orders and revenue dashboard metrics.
+
+- **Endpoint**: `GET /api/farmer/orders`
+- **Authentication**: Required (JWT Bearer, Farmer)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Orders retrieved.",
+  "data": {
+    "orders": [
+      {
+        "id": "65f1a2b3c4d5e6f7a8b9c0d5",
+        "status": "accepted",
+        "totalAmount": 7.0
+      }
+    ],
+    "revenue": {
+      "totalOrders": 12,
+      "totalRevenue": 84.5
+    }
+  }
+}
+```
+
+---
+
+## 20. Update Order Status
+Updates an order's status through its lifecycle.
+
+- **Endpoint**: `PATCH /api/orders/:id/status`
+- **Authentication**: Required (JWT Bearer, Farmer / Customer)
+- **Request Body**:
 ```json
 {
   "status": "accepted"
+}
+```
+- **Order Status Lifecycle**:
+  - `placed` — initial state when customer submits an order
+  - `accepted` — farmer acknowledges order
+  - `ready_for_pickup` — order packed and waiting at stall
+  - `completed` — customer collected order
+  - `cancelled` / `declined` — cancelled by customer or declined by farmer (stock automatically restored)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Order status updated.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d5",
+    "status": "accepted"
+  }
+}
+```
+
+---
+
+## 21. Respond to a Review
+Replies to a specific review left on the farmer's stall.
+
+- **Endpoint**: `POST /api/reviews/:id/respond`
+- **Authentication**: Required (JWT Bearer, Farmer)
+- **Request Body**:
+```json
+{
+  "response": "Thanks so much for the kind words!"
+}
+```
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Response added.",
+  "data": {
+    "reviewId": "65f1a2b3c4d5e6f7a8b9c0d4",
+    "farmerResponse": "Thanks so much for the kind words!"
+  }
+}
+```
+
+---
+
+## 22. Create Market
+Creates a new market.
+
+- **Endpoint**: `POST /api/markets`
+- **Authentication**: Required (JWT Bearer, Admin)
+- **Request Body**:
+```json
+{
+  "name": "Downtown Farmers Market",
+  "address": "12 Market St, Dallas, TX",
+  "lat": 32.7767,
+  "lng": -96.7970,
+  "operatingDays": ["Saturday", "Sunday"],
+  "hours": "08:00 AM - 02:00 PM"
+}
+```
+- **Success Response (201 Created)**:
+```json
+{
+  "success": true,
+  "message": "Market created.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d2",
+    "name": "Downtown Farmers Market"
+  }
+}
+```
+
+---
+
+## 23. Update Market
+Updates a market's operating details or status.
+
+- **Endpoint**: `PUT /api/markets/:id`
+- **Authentication**: Required (JWT Bearer, Admin)
+- **Request Body**:
+```json
+{
+  "hours": "07:00 AM - 01:00 PM",
+  "status": "active"
+}
+```
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Market updated.",
+  "data": {
+    "id": "65f1a2b3c4d5e6f7a8b9c0d2",
+    "hours": "07:00 AM - 01:00 PM",
+    "status": "active"
+  }
+}
+```
+
+---
+
+## 24. Delete Market
+Removes a market from the system.
+
+- **Endpoint**: `DELETE /api/markets/:id`
+- **Authentication**: Required (JWT Bearer, Admin)
+- **Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "message": "Market deleted."
 }
 ```
 
@@ -144,7 +714,6 @@ The API enforces strict Role-Based Access Control (RBAC):
 ## ⚠️ Standard Error Responses
 
 All error responses return standard HTTP status codes with a clean JSON body:
-
 ```json
 {
   "message": "Error description message here."
