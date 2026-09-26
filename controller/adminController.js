@@ -1,7 +1,7 @@
-const User = require('../models/user');
-const Product = require('../models/product');
-const Market = require('../models/market');
-const Order = require('../models/order');
+const User = require('../models/userSchema');
+const Product = require('../models/productSchema');
+const Market = require('../models/marketSchema');
+const Order = require('../models/orderSchema');
 
 // Get high-level platform analytics for admin dashboard
 exports.getAdminDashboard = async (req, res) => {
