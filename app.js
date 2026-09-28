@@ -50,8 +50,8 @@ userInfoController(app);
 marketController(app);
 productController(app);
 orderController(app);
-reviewController(app);
-if (typeof adminController === 'function') adminController(app);
+reviewController(app); 
+adminController(app);
 
 
 
