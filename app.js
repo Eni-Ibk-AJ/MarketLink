@@ -23,6 +23,7 @@ var app = express()
 const allowedOrigins = [
     'http://localhost:3000', 
     'http://localhost:5173', 
+    'https://marketlink-orcin.vercel.app/',
     // 'https://teslasafebroker.com',
     //  'https://api.teslasafebroker.com', 
 ];
